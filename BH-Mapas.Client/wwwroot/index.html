@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>BH-Mapas.Client</title>
+    <base href="/" />
+    <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="app.css" />
+    <link rel="stylesheet" href="BH-Mapas.Client.styles.css" />
+    <link rel="icon" href="data:,">
+    <!-- CSS de Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+        .mapa-contenedor { height: 480px; width: 100%; border-radius: 8px; }
+    </style>
+</head>
+
+<body>
+
+    <div class="status-bar-safe-area"></div>
+
+    <div id="app">Loading...</div>
+
+    <div id="blazor-error-ui" data-nosnippet>
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+
+    <script src="_framework/blazor.webview.js" autostart="false"></script>
+
+    <!-- Script de Leaflet -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Interoperabilidad JS para el marcador del vehículo -->
+    <script>
+        let mapaVehiculo = null;
+        let marcadorVehiculo = null;
+
+        window.inicializarMapa = function (elementId, latInicial, lngInicial, zoom) {
+            if (mapaVehiculo) {
+                mapaVehiculo.remove();
+            }
+
+            mapaVehiculo = L.map(elementId).setView([latInicial, lngInicial], zoom);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(mapaVehiculo);
+
+            marcadorVehiculo = L.marker([latInicial, lngInicial]).addTo(mapaVehiculo)
+                .bindPopup("<b>Vehículo en línea</b>")
+                .openPopup();
+        };
+
+        window.actualizarPosicionVehiculo = function (lat, lng, infoTexto) {
+            if (!mapaVehiculo || !marcadorVehiculo) return;
+
+            const nuevaPos = [lat, lng];
+            marcadorVehiculo.setLatLng(nuevaPos);
+            marcadorVehiculo.setPopupContent(infoTexto);
+            mapaVehiculo.panTo(nuevaPos, { animate: true, duration: 1.0 });
+        };
+    </script>
+</body>
+
+</html>

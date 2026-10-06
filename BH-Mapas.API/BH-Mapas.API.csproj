@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>BH_Mapas.API</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\BH-Mapas-Shared\BH-Mapas-Shared.csproj" />
+    </ItemGroup>
+
+</Project>

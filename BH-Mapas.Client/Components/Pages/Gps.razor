@@ -1,0 +1,127 @@
+@page "/gps"
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+@using Microsoft.AspNetCore.SignalR.Client
+@using System.Threading
+@using BH_Mapas_Shared.DTOs
+
+<h3 class="mb-3">Transmisor GPS y Visualización Móvil (Blazor Hybrid)</h3>
+
+<div class="card p-3 shadow-sm mb-3">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="mb-1">Vehículo: Kardian-01</h5>
+            <p class="text-muted mb-0">Estado: @(transmitiendo ? "Transmitiendo GPS activo" : "Detenido")</p>
+        </div>
+        <button class="btn @(transmitiendo ? "btn-danger" : "btn-success")" @onclick="ToggleTransmision">
+            @(transmitiendo ? "Detener GPS" : "Iniciar Transmisión GPS")
+        </button>
+    </div>
+</div>
+
+<div id="mapaContenedorHybrid" class="mapa-contenedor shadow-sm border mb-3"></div>
+
+@code {
+    private HubConnection? hubConnection;
+    private CancellationTokenSource? cts;
+    private bool transmitiendo = false;
+    private const string VehiculoId = "Kardian-01";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Inicializar mapa local en el móvil
+            await JS.InvokeVoidAsync("inicializarMapa", "mapaContenedorHybrid", -36.6167, -64.2833, 14);
+
+#if ANDROID
+            // 10.0.2.2 es localhost de la PC host en el emulador Android (HTTP para evitar el certificado de desarrollo)
+            const string hubUrl = "http://10.0.2.2:5101/hubs/ubicacion";
+#else
+            const string hubUrl = "http://localhost:5101/hubs/ubicacion";
+#endif
+
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl(hubUrl)
+                .WithAutomaticReconnect()
+                .Build();
+
+            try
+            {
+                await hubConnection.StartAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"No se pudo conectar al hub SignalR: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task ToggleTransmision()
+    {
+        if (transmitiendo)
+        {
+            cts?.Cancel();
+            transmitiendo = false;
+        }
+        else
+        {
+            cts = new CancellationTokenSource();
+            transmitiendo = true;
+            _ = IniciarCicloGpsAsync(cts.Token);
+        }
+    }
+
+    private async Task IniciarCicloGpsAsync(CancellationToken token)
+    {
+        try
+        {
+            while (!token.IsCancellationRequested)
+            {
+                // 1. Solicitar posición al sensor GPS nativo de .NET MAUI
+                var request = new GeolocationRequest(GeolocationAccuracy.High, TimeSpan.FromSeconds(5));
+                var location = await Geolocation.Default.GetLocationAsync(request, token);
+
+                if (location != null)
+                {
+                    var dto = new UbicacionVehiculoDto(
+                        VehiculoId,
+                        location.Latitude,
+                        location.Longitude,
+                        (location.Speed ?? 0) * 3.6, // m/s a km/h
+                        DateTime.UtcNow
+                    );
+
+                    // 2. Emitir por SignalR al servidor
+                    if (hubConnection?.State == HubConnectionState.Connected)
+                    {
+                        await hubConnection.SendAsync("EnviarUbicacionVehiculo", dto, cancellationToken: token);
+                    }
+
+                    // 3. Actualizar el mapa local en el dispositivo
+                    var popupHtml = $"<b>Mi Ubicación:</b> {location.Latitude:F5}, {location.Longitude:F5}";
+                    await JS.InvokeVoidAsync("actualizarPosicionVehiculo", location.Latitude, location.Longitude, popupHtml);
+                }
+
+                // Intervalo de actualización: cada 3 segundos
+                await Task.Delay(3000, token);
+            }
+        }
+        catch (TaskCanceledException) { }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al obtener GPS: {ex.Message}");
+            transmitiendo = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        cts?.Cancel();
+        if (hubConnection != null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+}

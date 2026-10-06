@@ -1,0 +1,6 @@
+@BH_Mapas.API_HostAddress = http://localhost:5101
+
+GET {{BH_Mapas.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

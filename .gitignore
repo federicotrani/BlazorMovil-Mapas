@@ -1,0 +1,85 @@
+## .NET / MAUI / Blazor
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+ARM/
+ARM64/
+[Ll]og/
+[Ll]ogs/
+artifacts/
+publish/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+launchSettings.json.user
+project.lock.json
+project.fragment.lock.json
+*.nuget.props
+*.nuget.targets
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+msbuild.log
+msbuild.err
+msbuild.wrn
+*.binlog
+*.rsp
+*.pdb
+*.dbmdl
+*.pubxml.user
+.vs/
+.vscode/
+
+## Tests / cobertura
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+coverage*.json
+coverage*.xml
+
+## JetBrains Rider / IntelliJ
+.idea/
+*.iml
+*.sln.iml
+.idea_modules/
+*.DotSettings.user
+
+## Android / iOS (MAUI)
+*.apk
+*.aab
+*.keystore
+*.jks
+*.ipa
+*.dSYM/
+.gradle/
+local.properties
+
+## Secretos y configuracion local
+appsettings.Local.json
+appsettings.*.Local.json
+secrets.json
+.env
+.env.*
+*.pfx
+*.p12
+
+## Certificados de desarrollo
+*.pem
+*.key
+
+## SO
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*~
+*.swp
+*.tmp

@@ -1,0 +1,71 @@
+@page "/monitoreo"
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+@using BH_Mapas_Shared.DTOs
+@using Microsoft.AspNetCore.SignalR.Client
+
+<h3 class="mb-3">Rastreo Vehicular en Vivo (Blazor WASM)</h3>
+
+<div class="mb-3">
+    <span class="badge @(conectado ? "bg-success" : "bg-danger")">
+        @(conectado ? "Conectado al Servidor SignalR" : "Desconectado")
+    </span>
+    @if (ultimaUbicacion != null)
+    {
+        <span class="ms-3 text-muted">
+            Lat: @ultimaUbicacion.Latitud.ToString("F5"), 
+            Lng: @ultimaUbicacion.Longitud.ToString("F5") | 
+            Velocidad: @(ultimaUbicacion.VelocidadKmh?.ToString("F1") ?? "0") km/h | 
+            Hora: @ultimaUbicacion.FechaHoraUtc.ToLocalTime().ToString("HH:mm:ss")
+        </span>
+    }
+</div>
+
+<div id="mapaContenedorWasm" class="mapa-contenedor shadow-sm border"></div>
+
+@code {
+    private HubConnection? hubConnection;
+    private UbicacionVehiculoDto? ultimaUbicacion;
+    private bool conectado => hubConnection?.State == HubConnectionState.Connected;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Inicializar mapa centrado en coordenadas por defecto (ej. Santa Rosa, La Pampa: -36.6167, -64.2833)
+            await JS.InvokeVoidAsync("inicializarMapa", "mapaContenedorWasm", -36.6167, -64.2833, 14);
+
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl("http://localhost:5101/hubs/ubicacion") // URL base de la Web API
+                .WithAutomaticReconnect()
+                .Build();
+
+            hubConnection.On<UbicacionVehiculoDto>("RecibirUbicacionVehiculo", async (datos) =>
+            {
+                ultimaUbicacion = datos;
+                var popupHtml = $"<b>Vehículo:</b> {datos.VehiculoId}<br/><b>Velocidad:</b> {datos.VelocidadKmh:F1} km/h";
+                
+                await JS.InvokeVoidAsync("actualizarPosicionVehiculo", datos.Latitud, datos.Longitud, popupHtml);
+                StateHasChanged();
+            });
+
+            try
+            {
+                await hubConnection.StartAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"No se pudo conectar al hub SignalR: {ex.Message}");
+            }
+            StateHasChanged();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection != null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+}
