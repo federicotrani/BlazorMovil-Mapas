@@ -1,0 +1,309 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Arquitectura BH-Mapas</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#f5f6f3;
+  --surface:#ffffff;
+  --surface-2:#eceee8;
+  --border:#d6d9d0;
+  --text:#1a231f;
+  --text-dim:#5c655f;
+  --accent:#1f6f5c;
+  --accent-soft:#e3efe9;
+  --mono-bg:#eef1ea;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121715;
+    --surface:#1a211e;
+    --surface-2:#1f2825;
+    --border:#304039;
+    --text:#e8ece9;
+    --text-dim:#9fada5;
+    --accent:#52d6ac;
+    --accent-soft:#1c342c;
+    --mono-bg:#1c241f;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121715;
+  --surface:#1a211e;
+  --surface-2:#1f2825;
+  --border:#304039;
+  --text:#e8ece9;
+  --text-dim:#9fada5;
+  --accent:#52d6ac;
+  --accent-soft:#1c342c;
+  --mono-bg:#1c241f;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  padding-inline:16px;
+  padding-block:28px 48px;
+  max-width:1120px;
+  margin:0 auto;
+}
+h1{
+  font-size:1.5rem;
+  font-weight:700;
+  margin:0 0 4px;
+  letter-spacing:-0.01em;
+}
+.subtitle{
+  color:var(--text-dim);
+  font-size:0.95rem;
+  margin:0 0 28px;
+  max-width:62ch;
+}
+.diagram-wrap{
+  overflow-x:auto;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:16px;
+}
+figure{margin:0;}
+svg{display:block;width:1040px;height:auto;margin:0 auto;}
+svg text{
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  fill:var(--text);
+}
+svg .mono{font-family:"IBM Plex Mono",monospace;}
+svg .dim{fill:var(--text-dim);}
+svg .label-bg{fill:var(--surface);}
+svg .box{fill:var(--surface-2);stroke:var(--border);stroke-width:1.5;}
+svg .box-outer{fill:none;stroke:var(--border);stroke-width:1.5;}
+svg .accent-line{stroke:var(--accent);fill:none;}
+svg .dim-line{stroke:var(--text-dim);fill:none;}
+figcaption{
+  color:var(--text-dim);
+  font-size:0.85rem;
+  margin-top:14px;
+  max-width:78ch;
+  line-height:1.5;
+}
+.legend{
+  display:flex;
+  flex-wrap:wrap;
+  gap:18px;
+  margin-top:16px;
+  padding-top:14px;
+  border-top:1px solid var(--border);
+  font-size:0.82rem;
+  color:var(--text-dim);
+}
+.legend-item{display:flex;align-items:center;gap:7px;}
+.swatch{width:26px;height:2px;flex:none;}
+.swatch.solid{background:var(--accent);height:3px;}
+.swatch.dim{background:var(--text-dim);height:2px;}
+.swatch.dashed{
+  height:0;border-top:2px dashed var(--text-dim);
+}
+
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:14px;
+  margin-top:28px;
+}
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:16px 18px;
+}
+.card h2{
+  font-size:0.95rem;
+  margin:0 0 8px;
+  font-weight:600;
+}
+.card .tag{
+  display:inline-block;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:0.72rem;
+  color:var(--accent);
+  background:var(--accent-soft);
+  padding:2px 7px;
+  border-radius:5px;
+  margin-bottom:8px;
+}
+.card ul{
+  margin:0;
+  padding-left:18px;
+  font-size:0.85rem;
+  color:var(--text-dim);
+  line-height:1.55;
+}
+.card li{margin-bottom:4px;}
+.card code{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:0.82em;
+  background:var(--mono-bg);
+  padding:1px 4px;
+  border-radius:4px;
+  color:var(--text);
+}
+
+.note{
+  margin-top:20px;
+  font-size:0.85rem;
+  color:var(--text-dim);
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:12px 16px;
+}
+.note code{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:0.82em;
+  background:var(--mono-bg);
+  padding:1px 4px;
+  border-radius:4px;
+  color:var(--text);
+}
+</style>
+
+<h1>Arquitectura BH-Mapas</h1>
+<p class="subtitle">Rastreo vehicular en tiempo real: una app híbrida transmite la posición GPS y un hub de SignalR la retransmite a todos los navegadores conectados.</p>
+
+<div class="diagram-wrap">
+<figure>
+<svg viewBox="0 0 1040 700" role="img" aria-label="La app BH-Mapas.Client envía su posición GPS por SignalR al hub UbicacionHub en BH-Mapas.API, que la retransmite a BH-Mapas.Web; las tres apps comparten el DTO definido en BH-Mapas-Shared mediante referencias de proyecto.">
+  <defs>
+    <marker id="arrowAccent" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <polygon points="0,0 10,5 0,10" fill="var(--accent)"/>
+    </marker>
+    <marker id="arrowDim" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <polygon points="0,0 10,5 0,10" fill="var(--text-dim)"/>
+    </marker>
+  </defs>
+
+  <!-- Client box -->
+  <rect class="box-outer" x="40" y="40" width="430" height="200" rx="10"/>
+  <text x="255" y="65" text-anchor="middle" font-size="15" font-weight="600">BH-Mapas.Client</text>
+  <text class="dim" x="255" y="83" text-anchor="middle" font-size="11.5">.NET MAUI Blazor Hybrid · Android / iOS / Windows / macOS</text>
+
+  <rect class="box" x="60" y="100" width="170" height="46" rx="6"/>
+  <text x="145" y="119" text-anchor="middle" font-size="11.5">Geolocation.Default</text>
+  <text class="dim" x="145" y="134" text-anchor="middle" font-size="10.5">sensor GPS nativo</text>
+
+  <rect class="box" x="250" y="100" width="200" height="46" rx="6"/>
+  <text class="mono" x="350" y="119" text-anchor="middle" font-size="11.5">Gps.razor</text>
+  <text class="dim" x="350" y="134" text-anchor="middle" font-size="10.5">transmisor</text>
+
+  <rect class="box" x="60" y="166" width="390" height="46" rx="6"/>
+  <text x="255" y="193" text-anchor="middle" font-size="11.5">Mapa Leaflet local (JS interop)</text>
+
+  <line class="dim-line" x1="230" y1="123" x2="248" y2="123" stroke-width="1.5" marker-end="url(#arrowDim)"/>
+  <line class="dim-line" x1="350" y1="147" x2="350" y2="164" stroke-width="1.5" marker-end="url(#arrowDim)"/>
+
+  <!-- Web box -->
+  <rect class="box-outer" x="570" y="40" width="430" height="200" rx="10"/>
+  <text x="785" y="65" text-anchor="middle" font-size="15" font-weight="600">BH-Mapas.Web</text>
+  <text class="dim" x="785" y="83" text-anchor="middle" font-size="11.5">Blazor WebAssembly · navegador</text>
+
+  <rect class="box" x="590" y="100" width="220" height="46" rx="6"/>
+  <text class="mono" x="700" y="119" text-anchor="middle" font-size="11.5">MonitoreoVehiculo.razor</text>
+  <text class="dim" x="700" y="134" text-anchor="middle" font-size="10.5">receptor</text>
+
+  <rect class="box" x="590" y="166" width="390" height="46" rx="6"/>
+  <text x="785" y="193" text-anchor="middle" font-size="11.5">Mapa Leaflet (JS interop)</text>
+
+  <line class="dim-line" x1="700" y1="147" x2="700" y2="164" stroke-width="1.5" marker-end="url(#arrowDim)"/>
+
+  <!-- API box -->
+  <rect class="box-outer" x="220" y="320" width="600" height="170" rx="10"/>
+  <text x="520" y="345" text-anchor="middle" font-size="15" font-weight="600">BH-Mapas.API</text>
+  <text class="dim" x="520" y="363" text-anchor="middle" font-size="11.5">ASP.NET Core Web API · puerto 5101 · CORS habilitado</text>
+
+  <rect class="box" x="250" y="380" width="330" height="68" rx="6"/>
+  <text class="mono" x="415" y="404" text-anchor="middle" font-size="11.5">UbicacionHub : Hub</text>
+  <text class="mono dim" x="415" y="420" text-anchor="middle" font-size="10.5">/hubs/ubicacion (SignalR)</text>
+
+  <rect class="box" x="610" y="380" width="180" height="68" rx="6"/>
+  <text x="700" y="404" text-anchor="middle" font-size="11.5">Controllers</text>
+  <text class="dim" x="700" y="420" text-anchor="middle" font-size="10.5">REST + OpenAPI</text>
+
+  <!-- Shared box -->
+  <rect class="box-outer" x="120" y="580" width="800" height="76" rx="10"/>
+  <text x="520" y="606" text-anchor="middle" font-size="14" font-weight="600">BH-Mapas-Shared — Class Library (net10.0)</text>
+  <text class="mono dim" x="520" y="625" text-anchor="middle" font-size="10.5">UbicacionVehiculoDto(VehiculoId, Latitud, Longitud, VelocidadKmh, FechaHoraUtc)</text>
+
+  <!-- Project references (compile-time) -->
+  <path class="dim-line" d="M 80 240 V 565 H 118" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrowDim)"/>
+  <path class="dim-line" d="M 960 240 V 565 H 922" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrowDim)"/>
+  <path class="dim-line" d="M 520 490 V 578" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrowDim)"/>
+
+  <!-- Realtime SignalR messages -->
+  <path class="accent-line" d="M 380 240 L 420 380" stroke-width="2" marker-end="url(#arrowAccent)"/>
+  <path class="accent-line" d="M 520 380 L 680 240" stroke-width="2" marker-end="url(#arrowAccent)"/>
+
+  <rect class="label-bg" x="325" y="288" width="210" height="34" rx="6"/>
+  <text class="mono" x="430" y="302" text-anchor="middle" font-size="10">SendAsync(</text>
+  <text class="mono" x="430" y="315" text-anchor="middle" font-size="10">"EnviarUbicacionVehiculo", dto)</text>
+
+  <rect class="label-bg" x="505" y="288" width="245" height="34" rx="6"/>
+  <text class="mono" x="627" y="302" text-anchor="middle" font-size="10">Clients.Others.SendAsync(</text>
+  <text class="mono" x="627" y="315" text-anchor="middle" font-size="10">"RecibirUbicacionVehiculo", dto)</text>
+</svg>
+<figcaption>El vehículo transmite su posición desde la app híbrida (<code class="mono" style="font-family:inherit">Gps.razor</code>) al hub de SignalR; el hub la retransmite en vivo a toda la Web WASM conectada (<code style="font-family:inherit">Clients.Others</code>, es decir, a todos menos al emisor). Las tres apps comparten el contrato <code style="font-family:inherit">UbicacionVehiculoDto</code> vía referencia de proyecto a BH-Mapas-Shared.</figcaption>
+</figure>
+<div class="legend">
+  <div class="legend-item"><span class="swatch solid"></span>mensaje SignalR en tiempo real (WebSocket)</div>
+  <div class="legend-item"><span class="swatch dim"></span>llamada interna / JS interop</div>
+  <div class="legend-item"><span class="swatch dashed"></span>referencia de proyecto (DTO compartido en compilación)</div>
+</div>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <span class="tag">net10.0-android / ios / maccatalyst / windows</span>
+    <h2>BH-Mapas.Client</h2>
+    <ul>
+      <li>.NET MAUI + Blazor Hybrid (<code>UseMaui</code>, <code>BlazorWebView</code>)</li>
+      <li><code>Gps.razor</code> lee el GPS nativo con <code>Geolocation.Default.GetLocationAsync</code> cada 3s</li>
+      <li>Envía cada posición al hub con <code>HubConnection.SendAsync</code></li>
+      <li>Pinta su propia posición en un mapa Leaflet embebido vía interop JS</li>
+    </ul>
+  </div>
+  <div class="card">
+    <span class="tag">net10.0 · Sdk.BlazorWebAssembly</span>
+    <h2>BH-Mapas.Web</h2>
+    <ul>
+      <li>Blazor WebAssembly puro, corre en el navegador del operador</li>
+      <li><code>MonitoreoVehiculo.razor</code> se suscribe a <code>RecibirUbicacionVehiculo</code></li>
+      <li>Actualiza el mapa Leaflet con cada posición recibida en vivo</li>
+    </ul>
+  </div>
+  <div class="card">
+    <span class="tag">net10.0 · Sdk.Web</span>
+    <h2>BH-Mapas.API</h2>
+    <ul>
+      <li><code>UbicacionHub</code> (SignalR) expuesto en <code>/hubs/ubicacion</code></li>
+      <li>Retransmite con <code>Clients.Others.SendAsync</code>: todo lo que entra, sale a los demás</li>
+      <li>CORS abierto con credenciales (requerido por SignalR)</li>
+      <li>Controllers REST + OpenAPI como capa aparte, sin relación con el hub</li>
+    </ul>
+  </div>
+  <div class="card">
+    <span class="tag">net10.0 · class library</span>
+    <h2>BH-Mapas-Shared</h2>
+    <ul>
+      <li>Único punto de verdad del contrato: <code>record UbicacionVehiculoDto</code></li>
+      <li>Referenciada por <code>ProjectReference</code> desde Client, Web y API</li>
+      <li>Evita serializar/deserializar a mano entre las tres apps</li>
+    </ul>
+  </div>
+</div>
+
+<p class="note">Detalle de red: en el emulador Android, <code>10.0.2.2</code> apunta al host (la PC), por eso <code>Gps.razor</code> usa esa IP en vez de <code>localhost</code> cuando compila para <code>#if ANDROID</code>; el resto de las plataformas usa <code>localhost:5101</code> directamente.</p>
+
+</body></html>
